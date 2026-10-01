@@ -1,0 +1,52 @@
+name: Deploy Release Asset to GitHub Pages
+
+on:
+  # Triggers the build automatically whenever you publish a new release
+  release:
+    types: [published]
+  # Allows you to trigger the build manually from the "Actions" tab if needed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download HTML Asset from Latest Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create a clean folder for the site
+          mkdir -p public_site
+          
+          # Downloads the asset from the release that triggered this workflow
+          gh release download ${{ github.event.release.tag_name || 'latest' }} --pattern "your-large-file.html" --dir public_site
+          
+          # Rename your large file to index.html so it serves as the homepage
+          mv public_site/index.html public_site/index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './public_site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
