@@ -31,7 +31,7 @@ jobs:
           # Create a clean folder for the site
           mkdir -p public_site
           
-          # Downloads index.html from your release assets directly into the folder
+          # Downloads index.html from your release assets directly into the public_site folder
           gh release download ${{ github.event.release.tag_name || 'latest' }} --pattern "index.html" --dir public_site
 
       - name: Setup Pages
@@ -45,4 +45,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
