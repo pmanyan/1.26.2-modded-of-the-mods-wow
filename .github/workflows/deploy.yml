@@ -1,10 +1,8 @@
 name: Deploy Release Asset to GitHub Pages
 
 on:
-  # Triggers the build automatically whenever you publish a new release
   release:
     types: [published]
-  # Allows you to trigger the build manually from the "Actions" tab if needed
   workflow_dispatch:
 
 permissions:
@@ -33,11 +31,8 @@ jobs:
           # Create a clean folder for the site
           mkdir -p public_site
           
-          # Downloads the asset from the release that triggered this workflow
-          gh release download ${{ github.event.release.tag_name || 'latest' }} --pattern "your-large-file.html" --dir public_site
-          
-          # Rename your large file to index.html so it serves as the homepage
-          mv public_site/index.html public_site/index.html
+          # Downloads index.html from your release assets directly into the folder
+          gh release download ${{ github.event.release.tag_name || 'latest' }} --pattern "index.html" --dir public_site
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -50,3 +45,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
