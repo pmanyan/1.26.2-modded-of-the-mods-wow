@@ -28,11 +28,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Create a clean folder for the site
           mkdir -p public_site
           
-          # Downloads index.html from your release assets directly into the public_site folder
-          gh release download ${{ github.event.release.tag_name || 'latest' }} --pattern "index.html" --dir public_site
+          # Safely check if triggered by a live release or manually run
+          if [ -n "${{ github.event.release.tag_name }}" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="latest"
+          fi
+          
+          echo "Fetching asset from release tag: $TAG"
+          
+          # Downloads index.html using the explicit tag flag
+          gh release download "$TAG" --pattern "index.html" --dir public_site
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -45,3 +53,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
